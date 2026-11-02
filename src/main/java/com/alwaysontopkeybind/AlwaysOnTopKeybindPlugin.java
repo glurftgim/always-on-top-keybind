@@ -62,6 +62,7 @@ public class AlwaysOnTopKeybindPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		hotkeyListener.setEnabledOnLoginScreen(true);
 		keyManager.registerKeyListener(hotkeyListener);
 	}
 
