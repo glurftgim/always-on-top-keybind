@@ -11,6 +11,7 @@ import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.HotkeyListener;
 
 /**
@@ -19,7 +20,7 @@ import net.runelite.client.util.HotkeyListener;
  */
 @PluginDescriptor(
 	name = "Always On Top Keybind",
-	description = "Toggle RuneLite's Always on top setting with a hotkey",
+	description = "Toggle RuneLite's Always on top setting with a hotkey and see an on-screen On/Off popup",
 	tags = {"always on top", "hotkey", "keybind", "window"}
 )
 public class AlwaysOnTopKeybindPlugin extends Plugin
@@ -44,6 +45,12 @@ public class AlwaysOnTopKeybindPlugin extends Plugin
 	@Inject
 	private AlwaysOnTopKeybindConfig config;
 
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private ToggleOverlay toggleOverlay;
+
 	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> config.hotkey())
 	{
 		@Override
@@ -64,18 +71,21 @@ public class AlwaysOnTopKeybindPlugin extends Plugin
 	{
 		hotkeyListener.setEnabledOnLoginScreen(true);
 		keyManager.registerKeyListener(hotkeyListener);
+		overlayManager.add(toggleOverlay);
 	}
 
 	@Override
 	protected void shutDown()
 	{
 		keyManager.unregisterKeyListener(hotkeyListener);
+		overlayManager.remove(toggleOverlay);
 	}
 
 	private void toggle()
 	{
 		boolean enabled = !runeLiteConfig.gameAlwaysOnTop();
 		configManager.setConfiguration(RuneLiteConfig.GROUP_NAME, ALWAYS_ON_TOP_KEY, enabled);
+		toggleOverlay.show("Always On Top: " + (enabled ? "On" : "Off"), enabled);
 
 		if (config.chatMessage())
 		{
